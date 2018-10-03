@@ -12,9 +12,10 @@ class BestFirstSearch extends SearchParent{
 
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		int initialState[][] = { { 1, 0, 3, 7 }, { 5, 2, 6, 4 }, { 9, 10, 11, 8 } };
+		//int initialState[][] = { { 1, 0, 3, 7 }, { 5, 2, 6, 4 }, { 9, 10, 11, 8 } };
 		//int initialState[][] = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 0, 11 } };
 		//int initialState[][] = { { 1, 2, 6, 4 }, { 5, 9, 7, 3 }, { 0, 10, 11, 8 } };
+		int initialState[][] = { { 0, 11, 10, 9 }, { 8, 7, 6, 5 }, { 4, 3, 2, 1 } };
 		State root = new State(initialState);
 
 		List<State> solutionPath = BestFirst(root);
@@ -68,17 +69,4 @@ class BestFirstSearch extends SearchParent{
 		return solutionPath;		
 	}
 	
-	public static void getSolutionPath(List<State> solutionPath, State state) {
-		//System.out.println("Printing Solution path");
-		State currentState = state;
-		solutionPath.add(currentState);
-
-		while (currentState.parent != null) {
-			currentState = currentState.parent;
-			solutionPath.add(currentState);
-		}
-		//System.out.println("Printing Solution path 2");
-
-	}
-
 }

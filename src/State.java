@@ -10,6 +10,8 @@ class State {
 	public Move move;
 	public int movePriority;
 	public int heuristicManhattanDistance;
+	public int heuristicEuclideanDistance;
+	public int heuristicHammingDistance;
 	public int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
 	public HashMap<Integer, ArrayList<Integer>> hashLocationGoalItems = new HashMap<>();
 
@@ -368,6 +370,10 @@ class State {
 		return manDist;
 	}
 	
+	public void setEuclideanDistance() {
+		this.heuristicEuclideanDistance = euclideanDistance(this.currentState);
+	}
+	
 	public int euclideanDistance(int initialState[][]) {
 		int dist = 0;
 		int eucDist = 0;
@@ -387,6 +393,10 @@ class State {
 			}
 		}
 		return eucDist;
+	}
+
+	public void setHammingDistance() {
+		this.heuristicHammingDistance = hammingDistance(this.currentState);
 	}
 	
 	public static int hammingDistance(int initialState[][]) {
