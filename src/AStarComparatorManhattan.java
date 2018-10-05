@@ -1,12 +1,12 @@
 import java.util.Comparator;
 
-class AStarComparatorManhattan implements Comparator<State>{
+class AStarComparatorManhattan implements Comparator<State> {
 
 	@Override
 	public int compare(State a, State b) {
-		if (a.heuristicManhattanDistance < b.heuristicManhattanDistance) {
+		if ((a.heuristicManhattanDistance + a.level) < (b.heuristicManhattanDistance + b.level)) {
 			return -1;
-		} else if (a.heuristicManhattanDistance > b.heuristicManhattanDistance) {
+		} else if ((a.heuristicManhattanDistance + a.level) > (b.heuristicManhattanDistance + b.level)) {
 			return 1;
 		} else {
 			if (a.movePriority < b.movePriority) {
@@ -18,6 +18,5 @@ class AStarComparatorManhattan implements Comparator<State>{
 			}
 		}
 	}
-
 
 }
