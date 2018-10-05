@@ -2,10 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Stack;
 
-class BestFirstSearch extends SearchParent{
-	
+class AStar extends SearchParent{
+
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
 		//int initialState[][] = { { 1, 0, 3, 7 }, { 5, 2, 6, 4 }, { 9, 10, 11, 8 } };
@@ -15,7 +14,7 @@ class BestFirstSearch extends SearchParent{
 		int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
 		State root = new State(initialState, goalState);
 
-		List<State> solutionPath = BestFirst(root);
+		List<State> solutionPath = AStarSearch(root);
 
 		if (solutionPath.size() > 0) {
 			for (int i = solutionPath.size() - 1; i >= 0; i--) {
@@ -30,13 +29,12 @@ class BestFirstSearch extends SearchParent{
 		
 	}
 	
-	public static List<State> BestFirst(State root) {
+	public static List<State> AStarSearch(State root) {
 		List<State> solutionPath = new ArrayList<>();
 		List<State> closedList = new ArrayList<>();
-		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorManhattan());
+		PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorManhattan());
 		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorEuclidean());
 		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorHamming());
-		PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorPermutaionInversion());
 
 		openList.add(root);
 		boolean isGoalReached = false;
@@ -68,5 +66,4 @@ class BestFirstSearch extends SearchParent{
 
 		return solutionPath;		
 	}
-	
 }

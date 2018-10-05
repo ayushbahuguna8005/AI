@@ -12,10 +12,13 @@ class State {
 	public int heuristicManhattanDistance;
 	public int heuristicEuclideanDistance;
 	public int heuristicHammingDistance;
-	public int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
+	public int level;
+	public int heuristicPermutationInversion;
+	public int[][] goalState; // = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10,
+								// 11, 0 } };
 	public HashMap<Integer, ArrayList<Integer>> hashLocationGoalItems = new HashMap<>();
 
-	public State(int[][] state) {
+	public State(int[][] state, int[][] goal) {
 
 		currentState = new int[state.length][state[0].length];
 		for (int i = 0; i < state.length; i++) {
@@ -23,6 +26,14 @@ class State {
 				currentState[i][j] = state[i][j];
 			}
 		}
+
+		goalState = new int[goal.length][goal[0].length];
+		for (int i = 0; i < goal.length; i++) {
+			for (int j = 0; j < goal[0].length; j++) {
+				goalState[i][j] = goal[i][j];
+			}
+		}
+
 		for (int i = 0; i < goalState.length; i++) {
 			for (int j = 0; j < goalState[i].length; j++) {
 				ArrayList<Integer> loc = new ArrayList<>();
@@ -32,6 +43,9 @@ class State {
 			}
 		}
 		this.setManhattanDistance();
+		this.setEuclideanDistance();
+		this.setHammingDistance();
+		this.setPermutationInversion();
 	}
 
 	public boolean isGoalReached() {
@@ -45,7 +59,6 @@ class State {
 				}
 			}
 		}
-
 		return isGoalState;
 	}
 
@@ -59,8 +72,9 @@ class State {
 			childUp[zeroX][zeroY] = childUp[zeroX - 1][zeroY];
 			childUp[zeroX - 1][zeroY] = temp;
 
-			State childUpState = new State(childUp);
+			State childUpState = new State(childUp, goalState);
 			childUpState.parent = this;
+			childUpState.level = this.level + 1;
 			childUpState.setUpMove(childUpState);
 			childrenStates.add(childUpState);
 		}
@@ -76,8 +90,9 @@ class State {
 			childUpRight[zeroX][zeroY] = childUpRight[zeroX - 1][zeroY + 1];
 			childUpRight[zeroX - 1][zeroY + 1] = temp;
 
-			State childRightState = new State(childUpRight);
+			State childRightState = new State(childUpRight, goalState);
 			childRightState.parent = this;
+			childRightState.level = this.level + 1;
 			childRightState.setUpRightMove(childRightState);
 			childrenStates.add(childRightState);
 		}
@@ -93,8 +108,9 @@ class State {
 			childRight[zeroX][zeroY] = childRight[zeroX][zeroY + 1];
 			childRight[zeroX][zeroY + 1] = temp;
 
-			State childRightState = new State(childRight);
+			State childRightState = new State(childRight, goalState);
 			childRightState.parent = this;
+			childRightState.level = this.level + 1;
 			childRightState.setRightMove(childRightState);
 			childrenStates.add(childRightState);
 		}
@@ -110,8 +126,9 @@ class State {
 			childDownRight[zeroX][zeroY] = childDownRight[zeroX + 1][zeroY + 1];
 			childDownRight[zeroX + 1][zeroY + 1] = temp;
 
-			State childDownRightState = new State(childDownRight);
+			State childDownRightState = new State(childDownRight, goalState);
 			childDownRightState.parent = this;
+			childDownRightState.level = this.level + 1;
 			childDownRightState.setDownRightMove(childDownRightState);
 			childrenStates.add(childDownRightState);
 		}
@@ -127,8 +144,9 @@ class State {
 			childDown[zeroX][zeroY] = childDown[zeroX + 1][zeroY];
 			childDown[zeroX + 1][zeroY] = temp;
 
-			State childDownState = new State(childDown);
+			State childDownState = new State(childDown, goalState);
 			childDownState.parent = this;
+			childDownState.level = this.level + 1;
 			childDownState.setDownMove(childDownState);
 			childrenStates.add(childDownState);
 		}
@@ -144,8 +162,9 @@ class State {
 			childDownLeft[zeroX][zeroY] = childDownLeft[zeroX + 1][zeroY - 1];
 			childDownLeft[zeroX + 1][zeroY - 1] = temp;
 
-			State childDownLeftState = new State(childDownLeft);
+			State childDownLeftState = new State(childDownLeft, goalState);
 			childDownLeftState.parent = this;
+			childDownLeftState.level = this.level + 1;
 			childDownLeftState.setDownLeftMove(childDownLeftState);
 			childrenStates.add(childDownLeftState);
 		}
@@ -161,8 +180,9 @@ class State {
 			childLeft[zeroX][zeroY] = childLeft[zeroX][zeroY - 1];
 			childLeft[zeroX][zeroY - 1] = temp;
 
-			State childLeftState = new State(childLeft);
+			State childLeftState = new State(childLeft, goalState);
 			childLeftState.parent = this;
+			childLeftState.level = this.level + 1;
 			childLeftState.setLeftMove(childLeftState);
 			childrenStates.add(childLeftState);
 		}
@@ -178,8 +198,9 @@ class State {
 			childUpLeft[zeroX][zeroY] = childUpLeft[zeroX - 1][zeroY - 1];
 			childUpLeft[zeroX - 1][zeroY - 1] = temp;
 
-			State childUpLeftState = new State(childUpLeft);
+			State childUpLeftState = new State(childUpLeft, goalState);
 			childUpLeftState.parent = this;
+			childUpLeftState.level = this.level + 1;
 			childUpLeftState.setUpLeftMove(childUpLeftState);
 			childrenStates.add(childUpLeftState);
 		}
@@ -251,14 +272,34 @@ class State {
 		moveUpRight(currentState, zeroX, zeroY);
 		moveUp(currentState, zeroX, zeroY);
 
-		// moveUp(currentState, zeroX, zeroY);
-		// moveUpRight(currentState, zeroX, zeroY);
-		// moveRight(currentState, zeroX, zeroY);
-		// moveDownRight(currentState, zeroX, zeroY);
-		// moveDown(currentState, zeroX, zeroY);
-		// moveDownLeft(currentState, zeroX, zeroY);
-		// moveLeft(currentState, zeroX, zeroY);
-		// moveUpLeft(currentState, zeroX, zeroY);
+	}
+
+	public void generateChildrenStatesBestFirst() {
+		int zeroX = 0;
+		int zeroY = 0;
+		boolean breakOuterLoop = false;
+		for (int i = 0; i < currentState.length; i++) {
+			for (int j = 0; j < currentState[0].length; j++) {
+				if (currentState[i][j] == 0) {
+					zeroX = i;
+					zeroY = j;
+					breakOuterLoop = true;
+					break;
+				}
+			}
+			if (breakOuterLoop) {
+				break;
+			}
+		}
+
+		moveUp(currentState, zeroX, zeroY);
+		moveUpRight(currentState, zeroX, zeroY);
+		moveRight(currentState, zeroX, zeroY);
+		moveDownRight(currentState, zeroX, zeroY);
+		moveDown(currentState, zeroX, zeroY);
+		moveDownLeft(currentState, zeroX, zeroY);
+		moveLeft(currentState, zeroX, zeroY);
+		moveUpLeft(currentState, zeroX, zeroY);
 
 	}
 
@@ -347,18 +388,18 @@ class State {
 		child.move = Move.UpLeft;
 		child.movePriority = 8;
 	}
-	
+
 	public void setManhattanDistance() {
 		this.heuristicManhattanDistance = manhattanDistance(this.currentState);
 	}
-	
+
 	public int manhattanDistance(int initialState[][]) {
 		int dist = 0;
 		int manDist = 0;
 		for (int i = 0; i < initialState.length; i++) {
-			for (int j = 0; j < initialState[i].length; j++) {				
+			for (int j = 0; j < initialState[i].length; j++) {
 				int item = initialState[i][j];
-				if(item == 0)
+				if (item == 0)
 					continue;
 				ArrayList<Integer> location = hashLocationGoalItems.get(item);
 				int x = location.get(0);
@@ -369,26 +410,26 @@ class State {
 		}
 		return manDist;
 	}
-	
+
 	public void setEuclideanDistance() {
 		this.heuristicEuclideanDistance = euclideanDistance(this.currentState);
 	}
-	
+
 	public int euclideanDistance(int initialState[][]) {
 		int dist = 0;
 		int eucDist = 0;
 		for (int i = 0; i < initialState.length; i++) {
-			for (int j = 0; j < initialState[i].length; j++) {				
+			for (int j = 0; j < initialState[i].length; j++) {
 				int item = initialState[i][j];
-				if(item == 0)
+				if (item == 0)
 					continue;
 				ArrayList<Integer> location = hashLocationGoalItems.get(item);
 				int x = location.get(0);
 				int y = location.get(1);
 				int distX = Math.abs(x - i);
 				int distY = Math.abs(y - j);
-				int distXY = distX*distX + distY*distY;
-				dist = (int) Math.sqrt(distXY);				
+				int distXY = distX * distX + distY * distY;
+				dist = (int) Math.sqrt(distXY);
 				eucDist += dist;
 			}
 		}
@@ -398,25 +439,62 @@ class State {
 	public void setHammingDistance() {
 		this.heuristicHammingDistance = hammingDistance(this.currentState);
 	}
-	
+
 	public static int hammingDistance(int initialState[][]) {
 		int count = 0;
-		int k =1;
+		int k = 1;
 		for (int i = 0; i < initialState.length; i++) {
-			for (int j = 0; j < initialState[i].length; j++) {				
+			for (int j = 0; j < initialState[i].length; j++) {
 				int item = initialState[i][j];
-				if(item == 0){
+				if (item == 0) {
 					k++;
 					continue;
 				}
-					
-				if(item != k)
+
+				if (item != k)
 					count++;
-				System.out.println("k = "+ k + " count = "+count + "item = "+item);
+				// System.out.println("k = "+ k + " count = "+count + "item =
+				// "+item);
 				k++;
-				
+
 			}
 		}
 		return count;
+	}
+
+	public void setPermutationInversion() {
+		this.heuristicHammingDistance = hammingDistance(this.currentState);
+	}
+
+	public static int permutationInversion(int[][] matrix) {
+		int permInv = 0;
+		int row = matrix.length;
+		int col = matrix[0].length;
+		int arr[] = new int[row * col];
+
+		int k = 0;
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix[0].length; j++) {
+				arr[k] = matrix[i][j];
+				k++;
+			}
+		}
+		for (int i = 0; i < arr.length - 1; i++) {
+			int item = arr[i];
+			if (item == 0)
+				continue;
+			int count = 0;
+			System.out.println("Item : " + item);
+			for (int j = i + 1; j < arr.length; j++) {
+				if (arr[j] == 0)
+					continue;
+				if (item > arr[j])
+					count++;
+			}
+			System.out.println(count);
+			permInv += count;
+		}
+
+		return permInv;
 	}
 }
