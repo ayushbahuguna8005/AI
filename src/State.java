@@ -242,7 +242,7 @@ class State {
 			}
 			// System.out.println();
 		}
-		System.out.println("]");
+		System.out.println("]" + " level = "+this.level);
 	}
 
 	public void generateChildrenStatesDFS() {

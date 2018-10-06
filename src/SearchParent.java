@@ -37,5 +37,14 @@ class SearchParent {
 
 		return exists;
 	}
+	public static State findExistingChildStateInListAStar(PriorityQueue<State> list, State state) {
+		State state2 = null;
+		for(State stateList: list){
+			if (stateList.isCurrentStateRegenerated(state.currentState))
+				state2 = stateList;
+		}
+
+		return state2;
+	}
 	
 }

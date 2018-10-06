@@ -12,6 +12,7 @@ class BestFirstSearch extends SearchParent{
 		//int initialState[][] = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 0, 11 } };
 		//int initialState[][] = { { 1, 2, 6, 4 }, { 5, 9, 7, 3 }, { 0, 10, 11, 8 } };
 		int initialState[][] = { { 0, 11, 10, 9 }, { 8, 7, 6, 5 }, { 4, 3, 2, 1 } };
+		//int initialState[][] = { { 0, 11, 9, 10 }, { 8, 7, 6, 5 }, { 4, 3, 2, 1 } };
 		int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
 		State root = new State(initialState, goalState);
 
@@ -33,10 +34,10 @@ class BestFirstSearch extends SearchParent{
 	public static List<State> BestFirst(State root) {
 		List<State> solutionPath = new ArrayList<>();
 		List<State> closedList = new ArrayList<>();
-		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorManhattan());
+		PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorManhattan());
 		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorEuclidean());
 		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorHamming());
-		PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorPermutaionInversion());
+		//PriorityQueue<State> openList = new PriorityQueue<>( new StateComparatorPermutaionInversion());
 
 		openList.add(root);
 		boolean isGoalReached = false;
