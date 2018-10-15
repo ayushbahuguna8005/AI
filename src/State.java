@@ -12,6 +12,8 @@ class State {
 	public int heuristicManhattanDistance;
 	public int heuristicEuclideanDistance;
 	public int heuristicHammingDistance;
+	public int heuristicChebyshev;
+	public int heuristicGaschnig;
 	public int level;
 	public int heuristicPermutationInversion;
 	public int[][] goalState; // = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10,
@@ -42,10 +44,13 @@ class State {
 				hashLocationGoalItems.put(goalState[i][j], loc);
 			}
 		}
+		
 		this.setManhattanDistance();
 		this.setEuclideanDistance();
 		this.setHammingDistance();
 		this.setPermutationInversion();
+		this.setChebyshev();
+		this.setGaschnig();
 	}
 
 	public boolean isGoalReached() {
@@ -242,7 +247,8 @@ class State {
 			}
 			// System.out.println();
 		}
-		System.out.println("]" + " level = "+this.level);
+		//System.out.println("]" + " cheby = "+this.heuristicChebyshev + " level = " + this.level);
+		System.out.println("]");
 	}
 
 	public void generateChildrenStatesDFS() {
@@ -274,7 +280,7 @@ class State {
 
 	}
 
-	public void generateChildrenStatesBestFirst() {
+	public void generateChildrenStates() {
 		int zeroX = 0;
 		int zeroY = 0;
 		boolean breakOuterLoop = false;
@@ -389,6 +395,133 @@ class State {
 		child.movePriority = 8;
 	}
 
+	public void setChebyshev() {
+		this.heuristicChebyshev = chebyshevHeuristic(this.currentState);
+	}
+	
+	public int chebyshevHeuristic(int initialState[][]) {
+		int chebDist = 0;
+
+		for (int i = 0; i < initialState.length; i++) {
+			for (int j = 0; j < initialState[i].length; j++) {
+				int item = initialState[i][j];
+				if (item == 0)
+					continue;
+				ArrayList<Integer> location = hashLocationGoalItems.get(item);
+				int x = location.get(0);
+				int y = location.get(1);
+
+				int rowDiff = Math.abs(x - i);
+				int colDiff = Math.abs(y - j);
+				chebDist += Math.max(rowDiff, colDiff);
+
+			}
+		}
+
+		return chebDist;
+
+	}
+
+	public void setGaschnig() {
+		this.heuristicGaschnig = gaschnigHeuristic(this.currentState);
+	}
+	
+	public int gaschnigHeuristic(int initialState[][]) {
+		int gaschDist = 0;
+
+		int[][] initState = new int[initialState.length][initialState[0].length];
+		for (int i = 0; i < initialState.length; i++) {
+			for (int j = 0; j < initialState[0].length; j++) {
+				initState[i][j] = initialState[i][j];
+			}
+		}
+		
+		
+		while (!isGoalReachedCustom(initState)) {
+			int[] pos = findElement(initState, 0);
+			int posZeroX = pos[0];
+			int posZeroY = pos[1];
+
+			if ((posZeroX == initState.length - 1) && (posZeroY == initState[0].length - 1)) {
+				int k = 1;
+				int posItemX = 0;
+				int posItemY = 0;
+				boolean breakOuter = false;
+				for (int i = 0; i < initState.length; i++) {
+					for (int j = 0; j < initState[i].length; j++) {
+						if (initState[i][j] != k) {
+							posItemX = i;
+							posItemY = j;
+							breakOuter = true;
+							break;
+						}
+						k++;
+					}
+					if (breakOuter) {
+						break;
+					}
+				}
+				int temp = initState[posZeroX][posZeroY];
+				initState[posZeroX][posZeroY] = initState[posItemX][posItemY];
+				initState[posItemX][posItemY] = temp;
+				gaschDist++;
+			} else {
+				int itemInGoal = goalState[posZeroX][posZeroY];
+				int[] item = findElement(initState, itemInGoal);
+				int itemX = item[0];
+				int itemY = item[1];
+				// swap
+				int temp = initState[posZeroX][posZeroY];
+				initState[posZeroX][posZeroY] = initState[itemX][itemY];
+				initState[itemX][itemY] = temp;
+				gaschDist++;
+			}
+		}
+
+		return gaschDist;
+	}
+	
+	public int[] findElement(int[][] state, int x) {
+		int[] loc = new int[2];
+		int posX = 0;
+		int posY = 0;
+		boolean found = false;
+		for (int i = 0; i < state.length; i++) {
+			for (int j = 0; j < state[i].length; j++) {
+				if (state[i][j] == x) {
+					posX = i;
+					posY = j;
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				break;
+			}
+		}
+		loc[0] = posX;
+		loc[1] = posY;
+
+		return loc;
+	}
+
+	public boolean isGoalReachedCustom(int currentState[][]) {
+		boolean isGoalState = true;
+
+		for (int i = 0; i < currentState.length; i++) {
+			for (int j = 0; j < currentState[0].length; j++) {
+				if (currentState[i][j] != this.goalState[i][j]) {
+					isGoalState = false;
+					return isGoalState;
+				}
+			}
+		}
+		return isGoalState;
+	}
+
+
+	
 	public void setManhattanDistance() {
 		this.heuristicManhattanDistance = manhattanDistance(this.currentState);
 	}
@@ -466,7 +599,7 @@ class State {
 		this.heuristicHammingDistance = hammingDistance(this.currentState);
 	}
 
-	public static int permutationInversion(int[][] matrix) {
+	public int permutationInversion(int[][] matrix) {
 		int permInv = 0;
 		int row = matrix.length;
 		int col = matrix[0].length;

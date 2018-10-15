@@ -6,7 +6,7 @@ import java.util.Stack;
 
 import javax.xml.soap.Node;
 
-class DFS extends SearchParent{
+class DFSExperiment extends SearchParent{
 
 	public static void main(String[] args) throws FileNotFoundException {
 		long startTime = System.currentTimeMillis();
@@ -23,17 +23,18 @@ class DFS extends SearchParent{
 				initialState[i][j] = initState[k++];
 			}
 		}
-
 		//int initialState[][] = { { 1, 0, 3, 7 }, { 5, 2, 6, 4 }, { 9, 10, 11, 8 } };
 		//int initialState[][] = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 0, 11 } };
 		//int initialState[][] = { { 1, 2, 6, 4 }, { 5, 9, 7, 3 }, { 0, 10, 11, 8 } };
+		//int initialState[][] = { { 1, 8, 6, 2 }, { 5, 11, 7, 9 }, { 3, 4, 0, 10 } };
 		int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
+		
 		State root = new State(initialState, goalState);
 
 		List<State> solutionPath = DFS(root);
 
 		printSolution(solutionPath);
-		printSolution(solutionPath, "puzzleDFS.txt");
+		printSolution(solutionPath, "puzzleDFS-Experiment.txt");
 		long endTime = System.currentTimeMillis();
 		System.out.println("Time taken : " + (endTime - startTime));
 
@@ -53,22 +54,20 @@ class DFS extends SearchParent{
 		while (!openList.isEmpty() && !isGoalReached) {
 			State currentState = openList.peek();
 			closedList.add(currentState);
-			// openList.remove(openList.size() - 1); // stack
+			// openList.remove(openList.size() - 1);
 			openList.pop();
 
-			if (currentState.isGoalReached()) {
-				System.out.println("Reached goal state");
-				isGoalReached = true;
-				getSolutionPath(solutionPath, currentState);
-				break;
-			}
-			
 			currentState.generateChildrenStatesDFS();
 			// currentState.printCurrentState();
 
 			for (int i = 0; i < currentState.childrenStates.size(); i++) {
 				State currentChild = currentState.childrenStates.get(i);
-				
+				if (currentChild.isGoalReached()) {
+					System.out.println("Reached goal state");
+					isGoalReached = true;
+					getSolutionPath(solutionPath, currentChild);
+					break;
+				}
 
 				if (!doesListAlreadyHasChildState(openList, currentChild)
 						&& !doesListAlreadyHasChildState(closedList, currentChild)) {

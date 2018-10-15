@@ -7,44 +7,100 @@ import java.util.PriorityQueue;
 
 class AStar extends SearchParent {
 
-	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-		long startTime = System.currentTimeMillis();
-		
-		
-		//int initialState[][] = { { 1, 0, 3, 7 }, { 5, 2, 6, 4 }, { 9, 10, 11,
-		//8 } };
-		// int initialState[][] = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 0,
-		// 11 } };
-		// int initialState[][] = { { 1, 2, 6, 4 }, { 5, 9, 7, 3 }, { 0, 10, 11,
-		// 8 } };
-		int initialState[][] = { { 0, 11, 10, 9}, { 8, 7, 6, 5 }, { 4, 3, 2, 1 } };
-		//int initialState[][] = { { 0, 11, 9, 10 }, { 8, 7, 6, 5 }, { 4, 3, 2, 1 } };
-		int[][] goalState = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 }, { 9, 10, 11, 0 } };
-		State root = new State(initialState, goalState);
-		
-		List<State> solutionPath = AStarSearch(root);
+		public static List<State> AStarSearchHamming(State root) throws FileNotFoundException, UnsupportedEncodingException {
+		// PrintWriter writer = new PrintWriter("puzzle12.txt");
+		List<State> solutionPath = new ArrayList<>();
+		List<State> closedList = new ArrayList<>();
+		PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorHamming());
+		openList.add(root);
+		boolean isGoalReached = false;
 
-		if (solutionPath.size() > 0) {
-			for (int i = solutionPath.size() - 1; i >= 0; i--) {
-				solutionPath.get(i).printCurrentState();
+		while (!openList.isEmpty() && !isGoalReached) {
+			State currentState = openList.poll();
+			closedList.add(currentState);
+			currentState.generateChildrenStates();
+
+			if (currentState.isGoalReached()) {
+				System.out.println("Reached goal state");
+				isGoalReached = true;
+				getSolutionPath(solutionPath, currentState);
+				break;
 			}
-			System.out.println("Size: " + solutionPath.size());
-		} else {
-			System.out.println("No solution path found");
+
+			for (int i = 0; i < currentState.childrenStates.size(); i++) {
+				State currentChild = currentState.childrenStates.get(i);
+
+				if (!doesListAlreadyHasChildState(openList, currentChild)
+						&& !doesListAlreadyHasChildState(closedList, currentChild)) {
+					openList.add(currentChild);
+				}
+
+				if (doesListAlreadyHasChildState(openList, currentChild)) {
+					State stateInList = findExistingChildStateInListAStar(openList, currentChild);
+					if (compareHeuristicHammingFirstBetter(currentChild, stateInList) && stateInList != null) {
+						openList.remove(stateInList);
+						openList.add(currentChild);
+					}
+				}
+			}
+			if (isGoalReached) {
+				break;
+			}
 		}
-		long endTime = System.currentTimeMillis();
-		System.out.println("Time taken : " + (endTime - startTime)/1000 + " seconds");
 
+		return solutionPath;
 	}
+		
+	public static List<State> AStarSearchEuclidean(State root) throws FileNotFoundException, UnsupportedEncodingException {
+		// PrintWriter writer = new PrintWriter("puzzle12.txt");
+		List<State> solutionPath = new ArrayList<>();
+		List<State> closedList = new ArrayList<>();
+		PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorEuclidean());
+		openList.add(root);
+		boolean isGoalReached = false;
 
-	public static List<State> AStarSearch(State root) throws FileNotFoundException, UnsupportedEncodingException {
-		//PrintWriter writer = new PrintWriter("puzzle12.txt");
+		while (!openList.isEmpty() && !isGoalReached) {
+			State currentState = openList.poll();
+			//currentState.printCurrentState();
+			closedList.add(currentState);
+			currentState.generateChildrenStates();
+
+			if (currentState.isGoalReached()) {
+				System.out.println("Reached goal state");
+				isGoalReached = true;
+				getSolutionPath(solutionPath, currentState);
+				break;
+			}
+
+			for (int i = 0; i < currentState.childrenStates.size(); i++) {
+				State currentChild = currentState.childrenStates.get(i);
+
+				if (!doesListAlreadyHasChildState(openList, currentChild)
+						&& !doesListAlreadyHasChildState(closedList, currentChild)) {
+					openList.add(currentChild);
+				}
+
+				if (doesListAlreadyHasChildState(openList, currentChild)) {
+					State stateInList = findExistingChildStateInListAStar(openList, currentChild);
+					if (compareHeuristicEuclideanFirstBetter(currentChild, stateInList) && stateInList != null) {
+						openList.remove(stateInList);
+						openList.add(currentChild);
+					}
+				}
+			}
+			if (isGoalReached) {
+				break;
+			}
+		}
+
+		return solutionPath;
+	}
+	
+	public static List<State> AStarSearchManhattan(State root) throws FileNotFoundException, UnsupportedEncodingException {
+		// PrintWriter writer = new PrintWriter("puzzle12.txt");
 		List<State> solutionPath = new ArrayList<>();
 		List<State> closedList = new ArrayList<>();
 		PriorityQueue<State> openList = new PriorityQueue<>(new AStarComparatorManhattan());
-		//PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorEuclidean());
-		//PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorHamming());
-		//PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorPermInv());
 
 		openList.add(root);
 		boolean isGoalReached = false;
@@ -52,38 +108,73 @@ class AStar extends SearchParent {
 		while (!openList.isEmpty() && !isGoalReached) {
 			State currentState = openList.poll();
 			closedList.add(currentState);
-			currentState.generateChildrenStatesBestFirst();
-			
+			currentState.generateChildrenStates();
+
 			if (currentState.isGoalReached()) {
 				System.out.println("Reached goal state");
 				isGoalReached = true;
 				getSolutionPath(solutionPath, currentState);
 				break;
 			}
-			
 
 			for (int i = 0; i < currentState.childrenStates.size(); i++) {
 				State currentChild = currentState.childrenStates.get(i);
-				if (currentChild.isGoalReached()) {
-					System.out.println("Reached goal state");
-					isGoalReached = true;
-					getSolutionPath(solutionPath, currentChild);
-					break;
-				}
 
 				if (!doesListAlreadyHasChildState(openList, currentChild)
 						&& !doesListAlreadyHasChildState(closedList, currentChild)) {
-					// openList.add(currentChild);
 					openList.add(currentChild);
 				}
-				
-				if (doesListAlreadyHasChildState(openList, currentChild)) {
+
+				else if (doesListAlreadyHasChildState(openList, currentChild)) {
 					State stateInList = findExistingChildStateInListAStar(openList, currentChild);
-					if(compareHeuristicManhattanFirstBetter(currentChild, stateInList) && stateInList!=null){
-						//System.out.println("Removed "+openList.remove(stateInList)+ " with level and heuristic:" +stateInList.heuristicManhattanDistance+" "+stateInList.level);
+					if (compareHeuristicManhattanFirstBetter(currentChild, stateInList) && stateInList != null) {
 						openList.remove(stateInList);
 						openList.add(currentChild);
-						//System.out.println("Added "+openList.add(currentChild)+ " with level and heuristic:" +currentChild.heuristicManhattanDistance+" "+currentChild.level);
+					}
+				}
+			}
+			if (isGoalReached) {
+				break;
+			}
+		}
+
+		return solutionPath;
+	}
+	
+	public static List<State> AStarSearchGaschnig(State root) throws FileNotFoundException, UnsupportedEncodingException {
+		// PrintWriter writer = new PrintWriter("puzzle12.txt");
+		List<State> solutionPath = new ArrayList<>();
+		List<State> closedList = new ArrayList<>();
+		 PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorGaschnig());
+
+		openList.add(root);
+		boolean isGoalReached = false;
+
+		while (!openList.isEmpty() && !isGoalReached) {
+			State currentState = openList.poll();
+			closedList.add(currentState);
+			currentState.generateChildrenStates();
+
+			if (currentState.isGoalReached()) {
+				System.out.println("Reached goal state");
+				isGoalReached = true;
+				getSolutionPath(solutionPath, currentState);
+				break;
+			}
+
+			for (int i = 0; i < currentState.childrenStates.size(); i++) {
+				State currentChild = currentState.childrenStates.get(i);
+
+				if (!doesListAlreadyHasChildState(openList, currentChild)
+						&& !doesListAlreadyHasChildState(closedList, currentChild)) {
+					openList.add(currentChild);
+				}
+
+				if (doesListAlreadyHasChildState(openList, currentChild)) {
+					State stateInList = findExistingChildStateInListAStar(openList, currentChild);
+					if (compareHeuristicGaschnigFirstBetter(currentChild, stateInList) && stateInList != null) {
+						openList.remove(stateInList);
+						openList.add(currentChild);
 					}
 				}
 			}
@@ -95,6 +186,59 @@ class AStar extends SearchParent {
 		return solutionPath;
 	}
 
+	public static List<State> AStarSearchChebyshev(State root) throws FileNotFoundException, UnsupportedEncodingException {
+		// PrintWriter writer = new PrintWriter("puzzle12.txt");
+		List<State> solutionPath = new ArrayList<>();
+		List<State> closedList = new ArrayList<>();
+		PriorityQueue<State> openList = new PriorityQueue<>( new AStarComparatorChebyshev());
+		
+		openList.add(root);
+		boolean isGoalReached = false;
+
+		while (!openList.isEmpty() && !isGoalReached) {
+			State currentState = openList.poll();
+			closedList.add(currentState);
+			currentState.generateChildrenStatesDFS();
+//			try {
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			//currentState.printCurrentState();
+			
+			if (currentState.isGoalReached()) {
+				System.out.println("Reached goal state");
+				isGoalReached = true;
+				getSolutionPath(solutionPath, currentState);
+				break;
+			}
+
+			for (int i = 0; i < currentState.childrenStates.size(); i++) {
+				State currentChild = currentState.childrenStates.get(i);
+
+				if (!doesListAlreadyHasChildState(openList, currentChild)
+						&& !doesListAlreadyHasChildState(closedList, currentChild)) {
+					openList.add(currentChild);
+				}
+
+				else if (doesListAlreadyHasChildState(openList, currentChild)) {
+					State stateInList = findExistingChildStateInListAStar(openList, currentChild);
+					if (compareHeuristicChebyshevFirstBetter(currentChild, stateInList) && stateInList != null) {
+						openList.remove(stateInList);
+						openList.add(currentChild);
+					}					
+				}
+			}
+			if (isGoalReached) {
+				break;
+			}
+		}
+
+		return solutionPath;
+	}
+
+	
 	public static boolean compareHeuristicManhattanFirstBetter(State s1, State s2) {
 		if ((s1.heuristicManhattanDistance + s1.level) < (s2.heuristicManhattanDistance + s2.level))
 			return true;
@@ -102,4 +246,43 @@ class AStar extends SearchParent {
 			return false;
 
 	}
+	
+	public static boolean compareHeuristicHammingFirstBetter(State s1, State s2) {
+		if ((s1.heuristicHammingDistance + s1.level) < (s2.heuristicHammingDistance + s2.level))
+			return true;
+		else
+			return false;
+
+	}
+
+	public static boolean compareHeuristicPermutationInversionFirstBetter(State s1, State s2) {
+		if ((s1.heuristicPermutationInversion + s1.level) < (s2.heuristicPermutationInversion + s2.level))
+			return true;
+		else
+			return false;
+
+	}
+	
+	public static boolean compareHeuristicEuclideanFirstBetter(State s1, State s2) {
+		if ((s1.heuristicEuclideanDistance + s1.level) < (s2.heuristicEuclideanDistance + s2.level))
+			return true;
+		else
+			return false;
+
+	}
+	
+	public static boolean compareHeuristicGaschnigFirstBetter(State s1, State s2) {
+		if ((s1.heuristicGaschnig + s1.level) < (s2.heuristicGaschnig + s2.level))
+			return true;
+		else
+			return false;
+	}
+	
+	public static boolean compareHeuristicChebyshevFirstBetter(State s1, State s2) {
+		if ((s1.heuristicChebyshev + s1.level) < (s2.heuristicChebyshev + s2.level))
+			return true;
+		else
+			return false;
+	}
+	
 }
